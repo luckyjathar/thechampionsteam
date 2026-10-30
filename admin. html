@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>क्विझ ॲडमिन पॅनल</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+  <style> body { font-family: 'Noto Sans Devanagari', sans-serif; } </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-3 flex justify-center items-center">
+
+  <div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-2xl my-4">
+    
+    <!-- Header -->
+    <div class="border-b border-slate-700 pb-3 mb-4 flex justify-between items-center">
+      <div>
+        <h1 class="text-base font-bold text-amber-400">⚔️ क्विझ कंट्रोल पॅनल</h1>
+        <p class="text-xs text-slate-400">थेट 1-क्लिक GitHub अपडेट</p>
+      </div>
+      <button onclick="toggleConfig()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded-lg text-slate-200 transition">
+        ⚙️ सेटिंग्ज
+      </button>
+    </div>
+
+    <!-- GitHub Settings Box (Saved in LocalStorage) -->
+    <div id="configBox" class="hidden bg-slate-950 border border-slate-700 rounded-xl p-3.5 mb-4 text-xs space-y-2.5">
+      <div class="font-bold text-amber-400 border-b border-slate-800 pb-1">GitHub API कॉन्फिगरेशन (फक्त एकदाच भरा)</div>
+      <div>
+        <label class="block text-slate-400 mb-0.5">GitHub Username:</label>
+        <input type="text" id="ghUser" placeholder="उदा. luckyjathar" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100 focus:outline-none focus:border-amber-400">
+      </div>
+      <div>
+        <label class="block text-slate-400 mb-0.5">Repository Name:</label>
+        <input type="text" id="ghRepo" placeholder="उदा. quiz-portal" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100 focus:outline-none focus:border-amber-400">
+      </div>
+      <div>
+        <label class="block text-slate-400 mb-0.5">GitHub Personal Access Token (PAT):</label>
+        <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100 focus:outline-none focus:border-amber-400">
+      </div>
+      <button onclick="saveConfig()" class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 font-bold rounded-lg text-white transition">
+        सेटिंग्ज सेव्ह करा
+      </button>
+    </div>
+
+    <!-- Question Form -->
+    <form id="quizForm" onsubmit="submitQuestion(event)" class="space-y-3 text-xs">
+      <div>
+        <label class="block text-slate-300 font-semibold mb-1">टॅग / विषय:</label>
+        <input type="text" id="tag" placeholder="उदा. पेंडन्सी, काउंटर रश, क्लोजिंग" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-amber-400">
+      </div>
+
+      <div>
+        <label class="block text-slate-300 font-semibold mb-1">फिल्डवरील परिस्थिती (प्रश्न):</label>
+        <textarea id="situation" rows="3" placeholder="उदा. महिन्याचे शेवटचे २ दिवस बाकी आहेत आणि..." required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-amber-400"></textarea>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="block text-slate-300 font-semibold">४ प्रॅक्टिकल पर्याय:</label>
+        <input type="text" id="optA" placeholder="पर्याय A" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100 focus:outline-none focus:border-amber-400">
+        <input type="text" id="optB" placeholder="पर्याय B" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100 focus:outline-none focus:border-amber-400">
+        <input type="text" id="optC" placeholder="पर्याय C" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100 focus:outline-none focus:border-amber-400">
+        <input type="text" id="optD" placeholder="पर्याय D" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100 focus:outline-none focus:border-amber-400">
+      </div>
+
+      <div>
+        <label class="block text-slate-300 font-semibold mb-1">योग्य उत्तर कोणते?:</label>
+        <select id="correct" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-amber-400">
+          <option value="0">पर्याय A</option>
+          <option value="1">पर्याय B</option>
+          <option value="2">पर्याय C</option>
+          <option value="3">पर्याय D</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-slate-300 font-semibold mb-1">महाभारतातील पात्र (गुण):</label>
+        <input type="text" id="character" placeholder="उदा. बर्बरीक (Extreme Precision & Focus)" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-amber-400">
+      </div>
+
+      <div>
+        <label class="block text-slate-300 font-semibold mb-1">कॉर्पोरेट धडा / स्पष्टीकरण:</label>
+        <textarea id="lesson" rows="2" placeholder="हा पर्याय का योग्य आहे याचे २ ओळीत स्पष्टीकरण..." required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-amber-400"></textarea>
+      </div>
+
+      <button type="submit" id="submitBtn" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl shadow-lg transition mt-3">
+        थेट GitHub वर सेव्ह करा 🚀
+      </button>
+    </form>
+
+    <div id="statusMsg" class="hidden mt-3 p-2.5 rounded-xl text-center text-xs font-semibold"></div>
+
+  </div>
+
+  <script>
+    // १. सेटिंग्ज लोकल स्टोरेजमध्ये तपासणे
+    function init() {
+      document.getElementById('ghUser').value = localStorage.getItem('gh_user') || '';
+      document.getElementById('ghRepo').value = localStorage.getItem('gh_repo') || '';
+      document.getElementById('ghToken').value = localStorage.getItem('gh_token') || '';
+
+      if (!localStorage.getItem('gh_token')) {
+        document.getElementById('configBox').classList.remove('hidden');
+      }
+    }
+
+    function toggleConfig() {
+      document.getElementById('configBox').classList.toggle('hidden');
+    }
+
+    function saveConfig() {
+      const user = document.getElementById('ghUser').value.trim();
+      const repo = document.getElementById('ghRepo').value.trim();
+      const token = document.getElementById('ghToken').value.trim();
+
+      if (!user || !repo || !token) {
+        alert("कृपया सर्व ३ फील्ड्स भरा!");
+        return;
+      }
+
+      localStorage.setItem('gh_user', user);
+      localStorage.setItem('gh_repo', repo);
+      localStorage.setItem('gh_token', token);
+
+      document.getElementById('configBox').classList.add('hidden');
+      showStatus("सेटिंग्ज सेव्ह झाल्या! ✅", "bg-emerald-950 text-emerald-300 border border-emerald-700");
+    }
+
+    function showStatus(text, classes) {
+      const el = document.getElementById('statusMsg');
+      el.className = `mt-3 p-2.5 rounded-xl text-center text-xs font-semibold ${classes}`;
+      el.innerText = text;
+      el.classList.remove('hidden');
+    }
+
+    // २. GitHub API कॉल करून questions.json थेट Commit करणे
+    async function submitQuestion(e) {
+      e.preventDefault();
+
+      const user = localStorage.getItem('gh_user');
+      const repo = localStorage.getItem('gh_repo');
+      const token = localStorage.getItem('gh_token');
+
+      if (!user || !repo || !token) {
+        alert("कृपया आधी ⚙️ सेटिंग्जमध्ये जाऊन GitHub टोकन भरा!");
+        toggleConfig();
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerText = "GitHub शी कनेक्ट होत आहे...";
+      showStatus("डेटा तपासत आहे...", "bg-slate-950 text-slate-300 border border-slate-700");
+
+      const newQ = {
+        tag: document.getElementById('tag').value.trim(),
+        situation: document.getElementById('situation').value.trim(),
+        options: [
+          document.getElementById('optA').value.trim(),
+          document.getElementById('optB').value.trim(),
+          document.getElementById('optC').value.trim(),
+          document.getElementById('optD').value.trim()
+        ],
+        correct: parseInt(document.getElementById('correct').value),
+        character: document.getElementById('character').value.trim(),
+        lesson: document.getElementById('lesson').value.trim()
+      };
+
+      const path = 'questions.json';
+      const apiUrl = `https://api.github.com/repos/${user}/${repo}/contents/${path}`;
+
+      try {
+        // A. questions.json ची सध्याची फाईल आणि SHA मिळवणे
+        let fileSha = null;
+        let currentQuestions = [];
+
+        const getRes = await fetch(apiUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json'
+          }
+        });
+
+        if (getRes.status === 200) {
+          const data = await getRes.json();
+          fileSha = data.sha;
+          // UTF-8 देवनागरी Base64 decode
+          const decodedStr = decodeURIComponent(escape(atob(data.content)));
+          currentQuestions = JSON.parse(decodedStr);
+        } else if (getRes.status !== 404) {
+          throw new Error("GitHub फाईल वाचता आली नाही. युझरनेम किंवा टोकन तपासा.");
+        }
+
+        // B. नवीन प्रश्न लिस्टमध्ये जोडणे
+        currentQuestions.push(newQ);
+
+        // C. UTF-8 सुरक्षित Base64 Encode
+        const updatedContent = JSON.stringify(currentQuestions, null, 2);
+        const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)));
+
+        btn.innerText = "नवीन प्रश्न सेव्ह होत आहे...";
+
+        // D. GitHub वर Commit (PUT Request)
+        const putRes = await fetch(apiUrl, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: `Add question: ${newQ.tag}`,
+            content: encodedContent,
+            sha: fileSha
+          })
+        });
+
+        if (putRes.ok) {
+          showStatus("प्रश्न यशस्वीरीत्या सेव्ह झाला! 🚀 मुख्य क्विझवर दिसेल.", "bg-emerald-950 text-emerald-300 border border-emerald-700");
+          document.getElementById('quizForm').reset();
+        } else {
+          const errData = await putRes.json();
+          throw new Error(errData.message || "सेव्ह करताना एरर आला.");
+        }
+
+      } catch (err) {
+        showStatus(`त्रुटी: ${err.message}`, "bg-rose-950 text-rose-300 border border-rose-700");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "थेट GitHub वर सेव्ह करा 🚀";
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

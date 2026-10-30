@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>महाभारत कॉर्पोरेट चॅलेंज</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans Devanagari', sans-serif; }
+    .fade-enter { animation: fadeIn 0.25s ease-out forwards; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-3">
+
+  <div class="w-full max-w-md bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 overflow-hidden flex flex-col min-h-[580px]">
+    
+    <!-- Top Header -->
+    <div class="bg-slate-950 px-5 py-4 border-b border-slate-700 flex justify-between items-center">
+      <div>
+        <h1 class="text-base font-bold text-amber-400">महाभारत कॉर्पोरेट चॅलेंज</h1>
+        <p class="text-[11px] text-slate-400">फिल्ड रिफ्लेक्स टेस्ट</p>
+      </div>
+      <div id="progress-text" class="text-xs font-semibold px-2.5 py-1 bg-slate-800 border border-slate-600 rounded-full text-slate-300">
+        0 / 0
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="p-5 flex-1 flex flex-col justify-between">
+      
+      <!-- Loading State -->
+      <div id="loading-box" class="flex-1 flex flex-col items-center justify-center text-center py-12">
+        <div class="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mb-3"></div>
+        <p class="text-xs text-slate-400">रणनीती प्रश्न लोड होत आहेत...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-box" class="hidden flex-1 flex flex-col items-center justify-center text-center py-10 px-4">
+        <div class="text-3xl mb-2">⚠️</div>
+        <h3 class="text-sm font-bold text-rose-400 mb-1">प्रश्न लोड करता आले नाहीत</h3>
+        <p class="text-xs text-slate-400 mb-4" id="error-desc">questions.json फाईल तपासण्यात अडचण आली.</p>
+        <button onclick="fetchQuestions()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-xs font-semibold rounded-xl text-slate-200">
+          पुन्हा प्रयत्न करा
+        </button>
+      </div>
+
+      <!-- Quiz Screen -->
+      <div id="quiz-box" class="hidden">
+        <!-- Situation Tag -->
+        <span id="situation-tag" class="inline-block text-[11px] font-semibold tracking-wider uppercase px-2.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-2">
+          परिस्थिती
+        </span>
+
+        <!-- Situation / Question Text -->
+        <h2 id="question-text" class="text-sm font-semibold text-slate-100 mb-4 leading-relaxed">
+          --
+        </h2>
+
+        <!-- Options Container -->
+        <div id="options-container" class="space-y-2.5 mb-4">
+          <!-- Dynamic Buttons injected here -->
+        </div>
+
+        <!-- Explanation Card -->
+        <div id="explanation-box" class="hidden p-3.5 rounded-xl bg-slate-950 border border-slate-700 text-xs space-y-1.5 fade-enter">
+          <div class="flex items-center gap-1.5 font-bold text-amber-400">
+            <span>⚔️</span>
+            <span id="char-name">--</span>
+          </div>
+          <p id="char-lesson" class="text-slate-300 leading-normal"></p>
+        </div>
+      </div>
+
+      <!-- Result Screen -->
+      <div id="result-box" class="hidden text-center py-6 flex-1 flex flex-col justify-center items-center fade-enter">
+        <div class="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-2xl mb-3">
+          🏆
+        </div>
+        <h2 class="text-lg font-bold text-slate-100 mb-1">अभिनंदन! चाचणी पूर्ण झाली</h2>
+        <p class="text-xs text-slate-400 mb-5">महाभारत कॉर्पोरेट रणनीती स्कोअर</p>
+        
+        <div class="bg-slate-950 border border-slate-700 rounded-xl p-4 w-full mb-6">
+          <div class="text-3xl font-extrabold text-amber-400 mb-1" id="score-display">0 / 0</div>
+          <div class="text-xs text-slate-400 font-medium" id="score-status">उत्कृष्ट रिफ्लेक्स!</div>
+        </div>
+
+        <button onclick="shareScore()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg mb-2 transition">
+          <span>व्हॉट्सॲपवर स्कोअर शेअर करा 📲</span>
+        </button>
+        <button onclick="restartQuiz()" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl font-semibold text-xs transition">
+          पुन्हा प्रयत्न करा 🔄
+        </button>
+      </div>
+
+      <!-- Footer Action Button -->
+      <div id="footer-box" class="hidden pt-3 border-t border-slate-700/60 mt-2">
+        <button id="next-btn" onclick="nextQuestion()" disabled class="w-full py-2.5 rounded-xl font-bold text-xs bg-slate-700 text-slate-400 cursor-not-allowed transition">
+          पर्याय निवडा
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let quizData = [];
+    let currentIdx = 0;
+    let score = 0;
+    let selectedOption = null;
+
+    // 1. questions.json वरून डेटा लोड करणे (कॅश टाळण्यासाठी timestamp सह)
+    async function fetchQuestions() {
+      const loadingBox = document.getElementById('loading-box');
+      const errorBox = document.getElementById('error-box');
+      const quizBox = document.getElementById('quiz-box');
+      const footerBox = document.getElementById('footer-box');
+
+      loadingBox.classList.remove('hidden');
+      errorBox.classList.add('hidden');
+      quizBox.classList.add('hidden');
+      footerBox.classList.add('hidden');
+
+      try {
+        const response = await fetch(`./questions.json?t=${new Date().getTime()}`);
+        if (!response.ok) {
+          throw new Error("questions.json फाईल सापडली नाही.");
+        }
+        quizData = await response.json();
+
+        if (!Array.isArray(quizData) || quizData.length === 0) {
+          throw new Error("कोणतेही प्रश्न उपलब्ध नाहीत. कृपया ॲडमिन पॅनेलमधून प्रश्न जोडा.");
+        }
+
+        loadingBox.classList.add('hidden');
+        quizBox.classList.remove('hidden');
+        footerBox.classList.remove('hidden');
+        
+        currentIdx = 0;
+        score = 0;
+        loadQuestion();
+
+      } catch (err) {
+        loadingBox.classList.add('hidden');
+        document.getElementById('error-desc').innerText = err.message;
+        errorBox.classList.remove('hidden');
+      }
+    }
+
+    // 2. वर्तमान प्रश्न दाखवणे
+    function loadQuestion() {
+      const q = quizData[currentIdx];
+      selectedOption = null;
+      
+      document.getElementById('progress-text').innerText = `${currentIdx + 1} / ${quizData.length}`;
+      document.getElementById('situation-tag').innerText = q.tag || "परिस्थिती";
+      document.getElementById('question-text').innerText = q.situation;
+      
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+
+      q.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-3 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-700/50 text-xs text-slate-200 transition flex items-start gap-2.5";
+        btn.innerHTML = `<span class="font-bold text-slate-400 shrink-0">${String.fromCharCode(65 + index)}.</span> <span>${opt}</span>`;
+        btn.onclick = () => selectOption(index);
+        optionsContainer.appendChild(btn);
+      });
+
+      document.getElementById('explanation-box').classList.add('hidden');
+      const nextBtn = document.getElementById('next-btn');
+      nextBtn.disabled = true;
+      nextBtn.innerText = "पर्याय निवडा";
+      nextBtn.className = "w-full py-2.5 rounded-xl font-bold text-xs bg-slate-700 text-slate-400 cursor-not-allowed transition";
+    }
+
+    // 3. पर्यायाची निवड व विश्लेषण
+    function selectOption(index) {
+      if (selectedOption !== null) return;
+      selectedOption = index;
+
+      const q = quizData[currentIdx];
+      const buttons = document.getElementById('options-container').children;
+
+      if (index === q.correct) {
+        buttons[index].classList.remove('bg-slate-900/60', 'border-slate-700');
+        buttons[index].classList.add('bg-emerald-950/80', 'border-emerald-500', 'text-emerald-200');
+        score++;
+      } else {
+        buttons[index].classList.remove('bg-slate-900/60', 'border-slate-700');
+        buttons[index].classList.add('bg-rose-950/80', 'border-rose-500', 'text-rose-200');
+        
+        buttons[q.correct].classList.remove('bg-slate-900/60', 'border-slate-700');
+        buttons[q.correct].classList.add('bg-emerald-950/80', 'border-emerald-500', 'text-emerald-200');
+      }
+
+      document.getElementById('char-name').innerText = q.character || "महाभारत संदर्भ";
+      document.getElementById('char-lesson').innerText = q.lesson || "";
+      document.getElementById('explanation-box').classList.remove('hidden');
+
+      const nextBtn = document.getElementById('next-btn');
+      nextBtn.disabled = false;
+      nextBtn.innerText = (currentIdx === quizData.length - 1) ? "अंतिम निकाल पहा" : "पुढील प्रश्न";
+      nextBtn.className = "w-full py-2.5 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg transition";
+    }
+
+    // 4. पुढील प्रश्न किंवा निकाल
+    function nextQuestion() {
+      currentIdx++;
+      if (currentIdx < quizData.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    // 5. रिझल्ट स्क्रीन
+    function showResults() {
+      document.getElementById('quiz-box').classList.add('hidden');
+      document.getElementById('footer-box').classList.add('hidden');
+      document.getElementById('result-box').classList.remove('hidden');
+
+      document.getElementById('score-display').innerText = `${score} / ${quizData.length}`;
+      
+      const pct = (score / quizData.length) * 100;
+      let status = "चांगला प्रयत्न! रणनीती अधिक स्पष्ट हवी.";
+      if (pct === 100) status = "सर्वोत्कृष्ट! १००% कुरुक्षेत्र रणनीतिकार 🏹";
+      else if (pct >= 60) status = "उत्तम फिल्ड निर्णयक्षमता! 🎯";
+      
+      document.getElementById('score-status').innerText = status;
+    }
+
+    // 6. व्हॉट्सॲप शेअरिंग
+    function shareScore() {
+      const text = `मी 'महाभारत कॉर्पोरेट चॅलेंज' मध्ये ${quizData.length} पैकी ${score} गुण मिळवले! 🎯⚔️ तुम्ही पण चाचणी द्या: ${window.location.href}`;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    // 7. रीस्टार्ट
+    function restartQuiz() {
+      currentIdx = 0;
+      score = 0;
+      document.getElementById('result-box').classList.add('hidden');
+      document.getElementById('quiz-box').classList.remove('hidden');
+      document.getElementById('footer-box').classList.remove('hidden');
+      loadQuestion();
+    }
+
+    // ऑटो स्टार्ट
+    fetchQuestions();
+  </script>
+</body>
+</html>

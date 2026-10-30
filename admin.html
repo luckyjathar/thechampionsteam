@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>क्विझ ॲडमिन पॅनल - इमेज सपोर्ट</title>
+  <title>क्विझ ॲडमिन पॅनल - Gemini AI इमेज जनरेटर</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
   <style> body { font-family: 'Noto Sans Devanagari', sans-serif; } </style>
@@ -14,16 +14,16 @@
     <div class="border-b border-slate-700 pb-3 mb-4 flex justify-between items-center">
       <div>
         <h1 class="text-base font-bold text-amber-400">⚔️ क्विझ कंट्रोल पॅनल</h1>
-        <p class="text-xs text-slate-400">बल्क व इमेज सपोर्ट</p>
+        <p class="text-xs text-slate-400">ऑटो Gemini AI इमेज सपोर्ट</p>
       </div>
       <button onclick="toggleConfig()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded-lg text-slate-200 transition">
         ⚙️ सेटिंग्ज
       </button>
     </div>
 
-    <!-- GitHub Settings -->
+    <!-- Configuration Screen (GitHub & Gemini) -->
     <div id="configBox" class="hidden bg-slate-950 border border-slate-700 rounded-xl p-3.5 mb-4 text-xs space-y-2.5">
-      <div class="font-bold text-amber-400 border-b border-slate-800 pb-1">GitHub API कॉन्फिगरेशन</div>
+      <div class="font-bold text-amber-400 border-b border-slate-800 pb-1">API कॉन्फिगरेशन</div>
       <div>
         <label class="block text-slate-400 mb-0.5">GitHub Username:</label>
         <input type="text" id="ghUser" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100">
@@ -36,10 +36,15 @@
         <label class="block text-slate-400 mb-0.5">GitHub PAT:</label>
         <input type="password" id="ghToken" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100">
       </div>
-      <button onclick="saveConfig()" class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 font-bold rounded-lg text-white">सेटिंग्ज सेव्ह करा</button>
+      <div class="border-t border-slate-800 pt-2">
+        <label class="block text-amber-400 font-semibold mb-0.5">Gemini API Key (इमेज निर्मितीसाठी):</label>
+        <input type="password" id="geminiKey" placeholder="AI-वापरायचा असल्यास की पेस्ट करा" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100">
+        <p class="text-[10px] text-slate-500 mt-0.5">नसेल तर: https://aistudio.google.com वरून मोफत मिळवा</p>
+      </div>
+      <button onclick="saveConfig()" class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 font-bold rounded-lg text-white">सर्व सेटिंग्ज सेव्ह करा</button>
     </div>
 
-    <!-- Mode Selector -->
+    <!-- View Mode Switch -->
     <div class="grid grid-cols-2 gap-2 mb-4 bg-slate-950 p-1 rounded-xl border border-slate-700 text-xs font-semibold">
       <button id="tabBulkBtn" onclick="switchTab('bulk')" class="py-2 rounded-lg bg-amber-500 text-slate-950">📋 Bulk Paste</button>
       <button id="tabSingleBtn" onclick="switchTab('single')" class="py-2 rounded-lg text-slate-400 hover:text-slate-200">✏️ Single Form</button>
@@ -49,9 +54,8 @@
     <div id="bulkSection" class="space-y-3 text-xs">
       <div>
         <label class="block text-slate-300 font-semibold mb-1">सर्व प्रश्नांचा JSON कोड टाका:</label>
-        <textarea id="bulkData" rows="10" placeholder='[{"tag": "क्लोजिंग", "situation": "...", "options": ["A","B","C","D"], "correct": 1, "character": "अर्जुन", "lesson": "...", "image": "https://..."}]' class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 font-mono text-[11px] text-amber-300 focus:outline-none"></textarea>
+        <textarea id="bulkData" rows="10" placeholder='[{"tag": "क्लोजिंग", "situation": "...", "options": ["A","B","C","D"], "correct": 1, "character": "अर्जुन", "lesson": "...", "image": "..."}]' class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 font-mono text-[11px] text-amber-300 focus:outline-none"></textarea>
       </div>
-
       <div class="flex items-center gap-2 text-slate-300">
         <input type="radio" id="modeAppend" name="writeMode" value="append" checked class="accent-amber-400">
         <label for="modeAppend">नवीन प्रश्न पुढे जोडा (Append)</label>
@@ -60,19 +64,18 @@
         <input type="radio" id="modeOverwrite" name="writeMode" value="overwrite" class="accent-amber-400">
         <label for="modeOverwrite">आधीचे काढून हेच ठेवा (Overwrite)</label>
       </div>
-
       <button type="button" id="bulkSubmitBtn" onclick="submitBulkData()" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl shadow-lg mt-2">सर्व प्रश्न १-क्लिकवर सेव्ह करा 🚀</button>
     </div>
 
-    <!-- TAB 2: SINGLE FORM -->
+    <!-- TAB 2: SINGLE FORM (With Automatic AI Image Generation) -->
     <form id="singleSection" onsubmit="submitSingleQuestion(event)" class="hidden space-y-2.5 text-xs">
       <div>
         <label class="block text-slate-300 font-semibold mb-0.5">टॅग / विषय:</label>
-        <input type="text" id="tag" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100">
+        <input type="text" id="tag" placeholder="उदा. क्लोजिंग" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100">
       </div>
       <div>
         <label class="block text-slate-300 font-semibold mb-0.5">फिल्डवरील परिस्थिती:</label>
-        <textarea id="situation" rows="2" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100"></textarea>
+        <textarea id="situation" rows="2" placeholder="प्रसंग किंवा अडचण सविस्तर लिहा..." required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100"></textarea>
       </div>
       <div class="space-y-1">
         <label class="block text-slate-300 font-semibold">पर्याय (A, B, C, D):</label>
@@ -84,67 +87,175 @@
       <div>
         <label class="block text-slate-300 font-semibold mb-0.5">योग्य उत्तर:</label>
         <select id="correct" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100">
-          <option value="0">पर्याय A</option>
-          <option value="1">पर्याय B</option>
-          <option value="2">पर्याय C</option>
-          <option value="3">पर्याय D</option>
+          <option value="0">A</option>
+          <option value="1">B</option>
+          <option value="2">C</option>
+          <option value="3">D</option>
         </select>
       </div>
       <div>
         <label class="block text-slate-300 font-semibold mb-0.5">पात्र (Character):</label>
-        <input type="text" id="character" placeholder="उदा. अर्जुन" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100">
+        <input type="text" id="character" placeholder="उदा. अर्जुन / कर्ण" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100">
       </div>
+      
+      <!-- AI & Custom Image Box -->
       <div>
-        <label class="block text-slate-300 font-semibold mb-0.5">इमेज URL (पर्यायी):</label>
-        <input type="url" id="imgUrl" placeholder="https://example.com/arjun.jpg" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100">
+        <label class="block text-slate-300 font-semibold mb-0.5">इमेज सेटिंग:</label>
+        <div class="flex gap-2 mb-1">
+          <button type="button" onclick="generateAIImage()" id="aiGenBtn" class="bg-indigo-700 hover:bg-indigo-650 px-3 py-1.5 font-bold rounded-lg text-white flex-1 transition text-xs">✨ Gemini AI ने फोटो बनवा</button>
+          <button type="button" onclick="document.getElementById('manualImgWrap').classList.toggle('hidden')" class="bg-slate-700 hover:bg-slate-650 px-2 py-1.5 font-bold rounded-lg text-slate-300 transition text-[10px]">मॅन्युअल URL</button>
+        </div>
+        <div id="manualImgWrap" class="hidden">
+          <input type="url" id="imgUrl" placeholder="https://example.com/arjun.jpg (किंवा AI जनरेट केलेले नाव)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100">
+        </div>
+        <div id="imgPreviewContainer" class="hidden mt-1.5 rounded-lg border border-slate-700 overflow-hidden relative h-28 bg-slate-950">
+          <img id="imgPreview" class="w-full h-full object-cover">
+          <span class="absolute top-1 right-1 bg-black/60 px-1.5 py-0.5 rounded text-[9px] text-emerald-400">✓ फोटो लोड झाला</span>
+        </div>
       </div>
+
       <div>
         <label class="block text-slate-300 font-semibold mb-0.5">धडा / स्पष्टीकरण:</label>
-        <textarea id="lesson" rows="2" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100"></textarea>
+        <textarea id="lesson" rows="2" placeholder="या परिस्थितीचा संदेश आणि कॉर्पोरेट धडा..." required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100"></textarea>
       </div>
-      <button type="submit" id="singleSubmitBtn" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl mt-2">हा प्रश्न जोडा 🚀</button>
+      <button type="submit" id="singleSubmitBtn" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl mt-2 transition">हा प्रश्न जोडा 🚀</button>
     </form>
 
     <div id="statusMsg" class="hidden mt-3 p-2.5 rounded-xl text-center text-xs font-semibold"></div>
   </div>
 
   <script>
+    let tempImageBase64 = "";
+
     function init() {
       document.getElementById('ghUser').value = localStorage.getItem('gh_user') || 'luckyjathar';
       document.getElementById('ghRepo').value = localStorage.getItem('gh_repo') || 'thechampionsteam';
       document.getElementById('ghToken').value = localStorage.getItem('gh_token') || '';
+      document.getElementById('geminiKey').value = localStorage.getItem('gem_key') || '';
       if (!localStorage.getItem('gh_token')) document.getElementById('configBox').classList.remove('hidden');
     }
+
     function toggleConfig() { document.getElementById('configBox').classList.toggle('hidden'); }
+
     function saveConfig() {
       localStorage.setItem('gh_user', document.getElementById('ghUser').value.trim());
       localStorage.setItem('gh_repo', document.getElementById('ghRepo').value.trim());
       localStorage.setItem('gh_token', document.getElementById('ghToken').value.trim());
+      localStorage.setItem('gem_key', document.getElementById('geminiKey').value.trim());
       document.getElementById('configBox').classList.add('hidden');
-      showStatus("सेटिंग्ज सेव्ह झाल्या! ✅", "bg-emerald-950 text-emerald-300 border border-emerald-700");
+      showStatus("सर्व सेटिंग्ज सेव्ह झाल्या! ✅", "bg-emerald-950 text-emerald-300 border border-emerald-700");
     }
+
     function switchTab(t) {
       document.getElementById('bulkSection').classList.toggle('hidden', t !== 'bulk');
       document.getElementById('singleSection').classList.toggle('hidden', t === 'bulk');
       document.getElementById('tabBulkBtn').className = t === 'bulk' ? "py-2 rounded-lg bg-amber-500 text-slate-950" : "py-2 rounded-lg text-slate-400";
       document.getElementById('tabSingleBtn').className = t === 'single' ? "py-2 rounded-lg bg-amber-500 text-slate-950" : "py-2 rounded-lg text-slate-400";
     }
+
     function showStatus(t, c) {
       const el = document.getElementById('statusMsg');
       el.className = `mt-3 p-2.5 rounded-xl text-center text-xs font-semibold ${c}`;
       el.innerText = t; el.classList.remove('hidden');
     }
 
-    async function commitToGitHub(updatedArray, successText, btn) {
+    // 🌟 ✨ Automatic Gemini AI Image Generator (Client-Side Interface)
+    async function generateAIImage() {
+      const character = document.getElementById('character').value.trim();
+      const tag = document.getElementById('tag').value.trim();
+      const gemKey = localStorage.getItem('gem_key');
+
+      if (!gemKey) {
+        alert("कृपया ⚙️ सेटिंग्जमध्ये जाऊन आधी 'Gemini API Key' टाका!");
+        toggleConfig();
+        return;
+      }
+      if (!character) {
+        alert("कृपया आधी 'पात्र (Character)' फील्ड भरा, जेणेकरून AI ला समजेल की कोणाचा फोटो बनवायचा आहे!");
+        return;
+      }
+
+      const btn = document.getElementById('aiGenBtn');
+      btn.disabled = true;
+      btn.innerText = "⚡ AI फोटो तयार करत आहे...";
+      showStatus("AI कडून फोटो जनरेट केला जात आहे... (याला १०-१५ सेकंद लागू शकतात)", "bg-indigo-950 text-indigo-300 border border-indigo-700");
+
+      try {
+        const prompt = `${character} in महाभारत (Mahabharata style). High-quality cinematic mythological painting, rich colors, expressive face, matching warrior/noble look. ${tag} contextual backdrop, warrior holding bow/acting with focus on resolution. 16:9 cinematic aspect ratio. Artistic and epic.`;
+        
+        // 🚨 Using Imagen through Gemini 3.1 Model as specified in developer capabilities
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${gemKey}`;
+
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseModalities: ["TEXT", "IMAGE"] }
+          })
+        });
+
+        if (!res.ok) {
+          throw new Error("API कडून योग्य प्रतिसाद आला नाही. की तपासा.");
+        }
+
+        const data = await res.json();
+        
+        // Find base64 image in Gemini response candidates
+        let base64Data = "";
+        const parts = data?.candidates?.[0]?.content?.parts || [];
+        for (let part of parts) {
+          if (part.inlineData && part.inlineData.mimeType.startsWith("image/")) {
+            base64Data = part.inlineData.data;
+            break;
+          }
+        }
+
+        if (!base64Data) {
+          throw new Error("इमेज डेटा सापडला नाही. कृपया पुन्हा प्रयत्न करा.");
+        }
+
+        tempImageBase64 = base64Data;
+        const imgPre = document.getElementById('imgPreview');
+        imgPre.src = `data:image/png;base64,${base64Data}`;
+        document.getElementById('imgPreviewContainer').classList.remove('hidden');
+        showStatus("AI फोटो यशस्वीपणे तयार झाला! 🎨", "bg-emerald-950 text-emerald-300 border border-emerald-700");
+
+      } catch (err) {
+        showStatus(`त्रुटी: ${err.message}. मॅन्युअल पद्धतीने इमेज वापरा.`, "bg-rose-950 text-rose-300 border border-rose-700");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "✨ Gemini AI ने फोटो बनवा";
+      }
+    }
+
+    // Committing file changes directly to GitHub
+    async function commitToGitHub(updatedArray, successText, btn, filenameToUpload = null, fileBase64 = null) {
       const user = localStorage.getItem('gh_user');
       const repo = localStorage.getItem('gh_repo');
       const token = localStorage.getItem('gh_token');
-      if (!token) { alert("कृपया आधी सेटिंग्जमध्ये जाऊन टोकन भरा!"); toggleConfig(); return; }
+      if (!token) { alert("आधी सेटिंग्जमध्ये जाऊन टोकन भरा!"); toggleConfig(); return; }
 
       btn.disabled = true;
-      showStatus("GitHub वर सेव्ह होत आहे...", "bg-slate-950 text-slate-300 border border-slate-700");
-      const apiUrl = `https://api.github.com/repos/${user}/${repo}/contents/questions.json`;
+      showStatus("प्रक्रिया सुरू आहे...", "bg-slate-950 text-slate-300 border border-slate-700");
 
+      // 1. If there's an AI Image to upload to GitHub
+      if (filenameToUpload && fileBase64) {
+        showStatus("AI फोटो GitHub वर अपलोड होत आहे...", "bg-slate-950 text-indigo-300 border border-indigo-700");
+        const imageApiUrl = `https://api.github.com/repos/${user}/${repo}/contents/${filenameToUpload}`;
+        try {
+          await fetch(imageApiUrl, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: `Upload AI Image ${filenameToUpload}`, content: fileBase64 })
+          });
+        } catch (imgErr) {
+          console.warn("इमेज अपलोड अपयशी, पण डेटा सेव्ह करण्यासाठी पुढे जात आहे.", imgErr);
+        }
+      }
+
+      // 2. Commit final JSON updating the data on GitHub
+      const apiUrl = `https://api.github.com/repos/${user}/${repo}/contents/questions.json`;
       try {
         let fileSha = null;
         const getRes = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -156,7 +267,7 @@
         const putRes = await fetch(apiUrl, {
           method: 'PUT',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: "Update questions with image support", content: encodedContent, sha: fileSha })
+          body: JSON.stringify({ message: "Update questions & dynamic images", content: encodedContent, sha: fileSha })
         });
 
         if (putRes.ok) {
@@ -164,7 +275,7 @@
           return true;
         } else {
           const err = await putRes.json();
-          throw new Error(err.message || "एरर आला.");
+          throw new Error(err.message || "सेव्ह करता आले नाही.");
         }
       } catch (e) {
         showStatus(`त्रुटी: ${e.message}`, "bg-rose-950 text-rose-300 border border-rose-700");
@@ -175,12 +286,9 @@
     async function submitBulkData() {
       const raw = document.getElementById('bulkData').value.trim();
       const btn = document.getElementById('bulkSubmitBtn');
-      if (!raw) return alert("कृपया JSON कोड टाका!");
+      if (!raw) return alert("JSON कोड टाका!");
       let parsed;
-      try {
-        parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) parsed = [parsed];
-      } catch(e) { return alert("JSON कोड फॉरमॅट चुकीचा आहे!"); }
+      try { parsed = JSON.parse(raw); if (!Array.isArray(parsed)) parsed = [parsed]; } catch(e) { return alert("JSON अयोग्य आहे!"); }
 
       let finalQ = parsed;
       if (document.getElementById('modeAppend').checked) {
@@ -195,14 +303,26 @@
           }
         } catch(e) {}
       }
-
-      const ok = await commitToGitHub(finalQ, `यशस्वी! एकूण ${finalQ.length} प्रश्न सेव्ह झाले 🚀`, btn);
+      const ok = await commitToGitHub(finalQ, `यशस्वी! एकूण ${finalQ.length} प्रश्न सेव्ह झाले!`, btn);
       if (ok) document.getElementById('bulkData').value = "";
     }
 
     async function submitSingleQuestion(e) {
       e.preventDefault();
       const btn = document.getElementById('singleSubmitBtn');
+      
+      let finalImgPath = document.getElementById('imgUrl').value.trim();
+      let uploadImageName = null;
+      let uploadBase64 = null;
+
+      // Use the newly generated AI Image, and formulate filename
+      if (tempImageBase64) {
+        const uniqueId = Date.now();
+        uploadImageName = `ai-images/img_${uniqueId}.png`;
+        uploadBase64 = tempImageBase64;
+        finalImgPath = uploadImageName; // local reference
+      }
+
       const newQ = {
         tag: document.getElementById('tag').value.trim(),
         situation: document.getElementById('situation').value.trim(),
@@ -214,7 +334,7 @@
         ],
         correct: parseInt(document.getElementById('correct').value),
         character: document.getElementById('character').value.trim(),
-        image: document.getElementById('imgUrl').value.trim() || "",
+        image: finalImgPath,
         lesson: document.getElementById('lesson').value.trim()
       };
 
@@ -230,9 +350,15 @@
       } catch(e) {}
 
       cur.push(newQ);
-      const ok = await commitToGitHub(cur, "प्रश्न इमेजसह सेव्ह झाला! 🚀", btn);
-      if (ok) document.getElementById('singleSection').reset();
+      
+      const ok = await commitToGitHub(cur, "प्रश्न इमेजसह यशस्वीपणे जोडला गेला! 🚀", btn, uploadImageName, uploadBase64);
+      if (ok) {
+        document.getElementById('singleSection').reset();
+        document.getElementById('imgPreviewContainer').classList.add('hidden');
+        tempImageBase64 = "";
+      }
     }
+
     init();
   </script>
 </body>
